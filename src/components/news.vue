@@ -9,10 +9,13 @@
 					<el-menu-item index="1-1">
 						<el-input
 							placeholder="Type something"
-							suffix-icon="el-icon-search"
-							v-model="searchQuery"
+							v-model="searchValue"
 						>
 						</el-input>
+						<i
+							class="el-icon-search"
+							@click="fetchSearchedNews"
+						></i>
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
@@ -138,11 +141,11 @@ export default {
 					},
 				],
 			},
-			searchQuery: "",
+			searchValue: null,
 			value: [],
 			value2: [],
 			apiUrl: "",
-			apiKey: "",
+			apiKey: "fa6b08f1472043538a7ae22d2ff6d84c",
 			articles: [],
 			isLoading: false,
 			currentPage: 1,
@@ -155,6 +158,9 @@ export default {
 		};
 	},
 	methods: {
+		showValue() {
+			console.log(this.searchValue);
+		},
 		navigateTo(url) {
 			window.open(url);
 		},
@@ -174,18 +180,31 @@ export default {
 		},
 		fetchNews() {
 			this.apiUrl =
-				"https://newsapi.org/v2/everything?q=apple&pageSize=" +
+				"https://newsapi.org/v2/everything?q=a&pageSize=" +
 				this.maxPerPage +
 				"&apiKey=" +
 				this.apiKey;
-			// "https://newsapi.org/v2/everything?pageSize=" +
-			// this.maxPerPage +
-			// "&apiKey=" +
-			// this.apiKey;
 			this.isBusy = true;
 
 			this.resetData();
 			this.fetchData();
+		},
+		fetchSearchedNews() {
+			if (this.searchValue == null || this.searchValue == "") {
+				this.fetchNews();
+			} else {
+				this.apiUrl =
+					"https://newsapi.org/v2/everything?q=" +
+					this.searchValue +
+					"&pageSize=" +
+					this.maxPerPage +
+					"&apiKey=" +
+					this.apiKey;
+				this.isBusy = true;
+
+				this.resetData();
+				this.fetchData();
+			}
 		},
 		fetchData() {
 			let req = new Request(this.apiUrl + "&page=" + this.currentPage);
@@ -205,6 +224,12 @@ export default {
 	},
 	created() {
 		this.fetchNews();
+	},
+	watch: {
+		searchValue(newValue) {
+			this.searchValue = newValue;
+			console.log(this.searchValue);
+		},
 	},
 };
 </script>

@@ -9,10 +9,12 @@
 					<el-menu-item index="1-1">
 						<el-input
 							placeholder="Type something"
-							suffix-icon="el-icon-search"
-							v-model="searchQuery"
-						>
-						</el-input>
+							v-model="searchTopValue"
+						></el-input>
+						<i
+							class="el-icon-search"
+							@click="fetchSearchedNews"
+						></i>
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
@@ -139,13 +141,12 @@ export default {
 				],
 			},
 			currentDate: [],
-			searchQuery: "",
+			searchTopValue: "",
 			value: [],
 			value2: [],
 			apiUrl: "",
-			apiKey: "",
+			apiKey: "fa6b08f1472043538a7ae22d2ff6d84c",
 			articles: [],
-			isBusy: false,
 			isLoading: false,
 			currentPage: 1,
 			maxPerPage: 10,
@@ -179,14 +180,26 @@ export default {
 				this.maxPerPage +
 				"&apiKey=" +
 				this.apiKey;
-			// "https://newsapi.org/v2/everything?pageSize=" +
-			// this.maxPerPage +
-			// "&apiKey=" +
-			// this.apiKey;
-			this.isBusy = true;
 
 			this.resetData();
 			this.fetchData();
+		},
+		fetchSearchedNews() {
+			if (this.searchTopValue == null || this.searchTopValue == "") {
+				this.fetchNews();
+			} else {
+				this.apiUrl =
+					"https://newsapi.org/v2/everything?q=" +
+					this.searchTopValue +
+					"&pageSize=" +
+					this.maxPerPage +
+					"&apiKey=" +
+					this.apiKey;
+				this.isBusy = true;
+
+				this.resetData();
+				this.fetchData();
+			}
 		},
 		fetchData() {
 			let req = new Request(this.apiUrl + "&page=" + this.currentPage);
@@ -197,7 +210,6 @@ export default {
 					data.articles.forEach((element) => {
 						this.articles.push(element);
 					});
-					this.isBusy = false;
 					this.loading = false;
 				})
 				.catch((err) => {
@@ -207,6 +219,12 @@ export default {
 	},
 	created() {
 		this.fetchNews();
+	},
+	watch: {
+		searchValue(newValue) {
+			this.searchValue = newValue;
+			console.log(this.searchValue);
+		},
 	},
 };
 </script>
