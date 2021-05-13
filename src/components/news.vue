@@ -10,12 +10,16 @@
 						<el-input
 							placeholder="Type something"
 							v-model="searchValue"
+							style="width:250px;"
 						>
 						</el-input>
-						<i
-							class="el-icon-search"
-							@click="fetchSearchedNews"
-						></i>
+
+						<el-button
+							type="default"
+							icon="el-icon-search "
+							@click="fetchSearchedNews()"
+							style="margin-left:10px;"
+						></el-button>
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
@@ -26,7 +30,7 @@
 				<el-menu-item-group>
 					<el-menu-item index="2-1">
 						<el-date-picker
-							v-model="value"
+							v-model="pickerDate"
 							type="daterange"
 							align="right"
 							unlink-panels
@@ -35,11 +39,12 @@
 							end-placeholder="End date"
 							:picker-options="pickerOptions"
 							:default-time="['00:00:00', '23:59:59']"
+							:default-value="`${currentDate}`"
 						>
 						</el-date-picker>
 					</el-menu-item>
 					<el-menu-item index="2-2" @click="datePicker">
-						<p>Component value：{{ value }}</p>
+						<p>Component value：{{ pickerDate }}</p>
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
@@ -48,17 +53,108 @@
 					><i class="el-icon-setting"></i>Rest of searching options
 				</template>
 				<el-menu-item-group>
-					<template slot="title">Group 1</template>
-					<el-menu-item index="3-1">Option 1</el-menu-item>
-					<el-menu-item index="3-2">Option 2</el-menu-item>
+					<template slot="title">Sort by:</template>
+					<el-menu-item index="3-1"
+						><el-select v-model="sortBy" placeholder="Sort by:">
+							<el-option
+								label="By publish date"
+								value="publishedAt"
+							>
+							</el-option>
+							<el-option label="By popularity" value="popularity">
+							</el-option>
+							<el-option label="By relevancy" value="relevancy">
+							</el-option> </el-select
+					></el-menu-item>
+
+					<el-menu-item index="3-2"> </el-menu-item>
+
+					<el-submenu index="3-3">
+						<template slot="title">Choose your language</template>
+						<el-menu-item index="3-3-1">
+							<el-radio v-model="language" label="en">
+								English
+							</el-radio>
+						</el-menu-item>
+						<el-menu-item index="3-3-2">
+							<el-radio v-model="language" label="de">
+								Deutsche
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-3">
+							<el-radio v-model="language" label="es">
+								Española
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-4">
+							<el-radio v-model="language" label="fr">
+								Français
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-5">
+							<el-radio v-model="language" label="he">
+								עִברִית
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-6">
+							<el-radio v-model="language" label="it">
+								Italiano
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-7">
+							<el-radio v-model="language" label="nl">
+								Hollandsk
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-8">
+							<el-radio v-model="language" label="nr">
+								Norsk
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-9">
+							<el-radio v-model="language" label="ar">
+								عربى
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-10">
+							<el-radio v-model="language" label="pt">
+								Português
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-11">
+							<el-radio v-model="language" label="ru">
+								Pусский
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-12">
+							<el-radio v-model="language" label="se">
+								Sami
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-13">
+							<el-radio v-model="language" label="ud">
+								Universal Dependencies
+							</el-radio>
+						</el-menu-item>
+
+						<el-menu-item index="3-3-14">
+							<el-radio v-model="language" label="zh">
+								汉语
+							</el-radio>
+						</el-menu-item>
+					</el-submenu>
 				</el-menu-item-group>
-				<el-menu-item-group title="Group 2">
-					<el-menu-item index="3-3">Option 3</el-menu-item>
-				</el-menu-item-group>
-				<el-submenu index="3-4">
-					<template slot="title">Option 4</template>
-					<el-menu-item index="3-4-1">Option 4-1</el-menu-item>
-				</el-submenu>
 			</el-submenu>
 		</el-menu>
 
@@ -142,24 +238,34 @@ export default {
 				],
 			},
 			searchValue: null,
-			value: [],
+			pickerDate: null,
 			value2: [],
 			apiUrl: "",
 			apiKey: "fa6b08f1472043538a7ae22d2ff6d84c",
 			articles: [],
 			isLoading: false,
 			currentPage: 1,
-			maxPerPage: 10,
+			maxPerPage: 5,
 			totalResults: null,
 			loading: true,
-			currentDate: "",
-			fromDate: "",
-			toDate: "",
+			language: "en",
+			date: "",
+			fromDate: this.$dn.date(new Date(), "yyyy-mm-dd", "-"),
+			toDate: this.$dn.date(new Date(), "yyyy-mm-dd", "-"),
+			sortBy: "publishedAt",
+			sortOptions: [
+				{ value: "publishedAt", label: "By public date" },
+				{ value: "popularity", label: "By popularity" },
+				{ value: "relevancy", label: "By relevancy" },
+			],
 		};
 	},
 	methods: {
 		showValue() {
-			console.log(this.searchValue);
+			console.log(this.fromDate, this.currentDate);
+		},
+		setDate() {
+			this.fromDate == this.currentDate;
 		},
 		navigateTo(url) {
 			window.open(url);
@@ -179,11 +285,7 @@ export default {
 			this.articles = [];
 		},
 		fetchNews() {
-			this.apiUrl =
-				"https://newsapi.org/v2/everything?q=a&pageSize=" +
-				this.maxPerPage +
-				"&apiKey=" +
-				this.apiKey;
+			this.apiUrl = `https://newsapi.org/v2/everything?q=a&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}&sortBy${this.sortBy}`;
 			this.isBusy = true;
 
 			this.resetData();
@@ -193,17 +295,11 @@ export default {
 			if (this.searchValue == null || this.searchValue == "") {
 				this.fetchNews();
 			} else {
-				this.apiUrl =
-					"https://newsapi.org/v2/everything?q=" +
-					this.searchValue +
-					"&pageSize=" +
-					this.maxPerPage +
-					"&apiKey=" +
-					this.apiKey;
+				this.apiUrl = `https://newsapi.org/v2/everything?q=${this.searchValue}&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}`;
 				this.isBusy = true;
-
 				this.resetData();
 				this.fetchData();
+				console.log("Yup", this.searchValue);
 			}
 		},
 		fetchData() {
@@ -221,14 +317,34 @@ export default {
 					console.log("Have some problems:", err);
 				});
 		},
+		fetchSwitch() {
+			if (this.searchValue == null || this.searchValue == "") {
+				this.fetchNews();
+			} else {
+				this.fetchSearchedNews();
+			}
+		},
 	},
 	created() {
 		this.fetchNews();
+		this.showValue();
+		this.setDate();
 	},
 	watch: {
 		searchValue(newValue) {
 			this.searchValue = newValue;
 			console.log(this.searchValue);
+		},
+		language(newValue) {
+			this.language = newValue;
+			this.loading = true;
+			this.fetchSwitch();
+		},
+		sortBy(newValue) {
+			this.sortBy = newValue;
+			console.log(this.sortBy);
+			this.loading = true;
+			this.fetchSwitch();
 		},
 	},
 };
@@ -253,6 +369,12 @@ body {
 	background: rgb(47, 47, 47);
 	color: white;
 	font-family: "Roboto", sans-serif;
+}
+.el-submenu {
+	width: 400px;
+}
+el-menu {
+	width: 400px;
 }
 .result-list {
 	padding-top: 60px;
