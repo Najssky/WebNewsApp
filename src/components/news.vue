@@ -39,12 +39,11 @@
 							end-placeholder="End date"
 							:picker-options="pickerOptions"
 							:default-time="['00:00:00', '23:59:59']"
-							:default-value="`${currentDate}`"
 						>
 						</el-date-picker>
 					</el-menu-item>
 					<el-menu-item index="2-2" @click="datePicker">
-						<p>Component value：{{ pickerDate }}</p>
+						<p>Component value：{{ fromDate }}</p>
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
@@ -197,6 +196,8 @@
 </template>
 
 <script>
+import moment from "moment";
+
 export default {
 	data() {
 		return {
@@ -323,6 +324,7 @@ export default {
 			} else {
 				this.fetchSearchedNews();
 			}
+			console.log(this.apiUrl);
 		},
 	},
 	created() {
@@ -344,6 +346,12 @@ export default {
 			this.sortBy = newValue;
 			console.log(this.sortBy);
 			this.loading = true;
+			this.fetchSwitch();
+		},
+		pickerDate(newValue) {
+			this.fromDate = moment(newValue[0]).format("YYYY-MM-DDTHH:mm:ss");
+			this.toDate = moment(newValue[1]).format("YYYY-MM-DDTHH:mm:ss");
+			console.log("From: ", this.fromDate, " To: ", this.toDate);
 			this.fetchSwitch();
 		},
 	},
