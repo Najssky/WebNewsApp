@@ -42,9 +42,6 @@
 						>
 						</el-date-picker>
 					</el-menu-item>
-					<el-menu-item index="2-2" @click="datePicker">
-						<p>Component value：{{ fromDate }}</p>
-					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
 			<el-submenu index="3">
@@ -65,8 +62,20 @@
 							<el-option label="By relevancy" value="relevancy">
 							</el-option> </el-select
 					></el-menu-item>
-
-					<el-menu-item index="3-2"> </el-menu-item>
+				</el-menu-item-group>
+				<el-menu-item-group>
+					<template slot="title">News per page:</template>
+					<el-menu-item index="3-2"
+						><el-select
+							v-model="maxPerPage"
+							placeholder="News per page:"
+						>
+							<el-option label="5" value="5"> </el-option>
+							<el-option label="10" value="10"> </el-option>
+							<el-option label="15" value="15"> </el-option>
+							<el-option label="20" value="20"> </el-option>
+						</el-select>
+					</el-menu-item>
 
 					<el-submenu index="3-3">
 						<template slot="title">Choose your language</template>
@@ -190,6 +199,15 @@
 						<i class="fas fa-chevron-right "></i>
 					</footer>
 				</article>
+				<el-pagination
+					background
+					layout="prev, pager, next"
+					:total="1000"
+					@current-change="handleCurrentChange"
+					:current-page="current_page"
+					v-model="currentPage"
+				>
+				</el-pagination>
 			</el-main>
 		</el-container>
 	</el-container>
@@ -263,7 +281,7 @@ export default {
 	},
 	methods: {
 		showValue() {
-			console.log(this.fromDate, this.currentDate);
+			console.log(this.apiUrl);
 		},
 		setDate() {
 			this.fromDate == this.currentDate;
@@ -286,17 +304,18 @@ export default {
 			this.articles = [];
 		},
 		fetchNews() {
-			this.apiUrl = `https://newsapi.org/v2/everything?q=a&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}&sortBy${this.sortBy}`;
+			this.apiUrl = `https://newsapi.org/v2/everything?q=a&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}&sortBy${this.sortBy}&page${this.currentPage}`;
 			this.isBusy = true;
 
 			this.resetData();
 			this.fetchData();
+			console.log(this.articles);
 		},
 		fetchSearchedNews() {
 			if (this.searchValue == null || this.searchValue == "") {
 				this.fetchNews();
 			} else {
-				this.apiUrl = `https://newsapi.org/v2/everything?q=${this.searchValue}&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}`;
+				this.apiUrl = `https://newsapi.org/v2/everything?q=${this.searchValue}&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}&page${this.currentPage}`;
 				this.isBusy = true;
 				this.resetData();
 				this.fetchData();
@@ -324,7 +343,11 @@ export default {
 			} else {
 				this.fetchSearchedNews();
 			}
-			console.log(this.apiUrl);
+		},
+		handleCurrentChange(val) {
+			this.currentPage = val;
+			console.log(`current page: ${this.currentPage}`);
+			this.fetchSwitch();
 		},
 	},
 	created() {
@@ -352,6 +375,14 @@ export default {
 			this.fromDate = moment(newValue[0]).format("YYYY-MM-DDTHH:mm:ss");
 			this.toDate = moment(newValue[1]).format("YYYY-MM-DDTHH:mm:ss");
 			console.log("From: ", this.fromDate, " To: ", this.toDate);
+			this.fetchSwitch();
+		},
+		maxPerPage(newValue) {
+			this.maxPerPage = newValue;
+			this.fetchSwitch();
+		},
+		currentPage(newValue) {
+			this.currentPage = newValue;
 			this.fetchSwitch();
 		},
 	},
