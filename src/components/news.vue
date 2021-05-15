@@ -204,7 +204,7 @@
 					layout="prev, pager, next"
 					:total="1000"
 					@current-change="handleCurrentChange"
-					:current-page="current_page"
+					:current-page="currentPage"
 					v-model="currentPage"
 				>
 				</el-pagination>
@@ -300,34 +300,29 @@ export default {
 			console.log(key, keyPath);
 		},
 		resetData() {
-			this.currentPage = 1;
 			this.articles = [];
 		},
 		fetchNews() {
-			this.apiUrl = `https://newsapi.org/v2/everything?q=a&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}&sortBy${this.sortBy}&page${this.currentPage}`;
-			this.isBusy = true;
-
 			this.resetData();
+			this.apiUrl = `https://newsapi.org/v2/everything?q=a&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}&sortBy${this.sortBy}&page=${this.currentPage}`;
+			this.isBusy = true;
 			this.fetchData();
+			console.log(this.apiUrl);
 			console.log(this.articles);
 		},
 		fetchSearchedNews() {
-			if (this.searchValue == null || this.searchValue == "") {
-				this.fetchNews();
-			} else {
-				this.apiUrl = `https://newsapi.org/v2/everything?q=${this.searchValue}&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}&page${this.currentPage}`;
-				this.isBusy = true;
-				this.resetData();
-				this.fetchData();
-				console.log("Yup", this.searchValue);
-			}
+			this.resetData();
+			this.apiUrl = `https://newsapi.org/v2/everything?q=${this.searchValue}&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}&page=${this.currentPage}`;
+			this.isBusy = true;
+			this.fetchData();
 		},
 		fetchData() {
-			let req = new Request(this.apiUrl + "&page=" + this.currentPage);
+			let req = new Request(this.apiUrl);
 			fetch(req)
 				.then((resp) => resp.json())
 				.then((data) => {
 					this.totalResults = data.totalResults;
+					console.log(this.totalResults)
 					data.articles.forEach((element) => {
 						this.articles.push(element);
 					});
@@ -379,10 +374,6 @@ export default {
 		},
 		maxPerPage(newValue) {
 			this.maxPerPage = newValue;
-			this.fetchSwitch();
-		},
-		currentPage(newValue) {
-			this.currentPage = newValue;
 			this.fetchSwitch();
 		},
 	},
