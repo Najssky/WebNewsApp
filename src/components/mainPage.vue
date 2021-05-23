@@ -1,5 +1,25 @@
 <template>
 	<div class="app">
+		<el-menu
+			:default-active="activeIndex2"
+			class="el-menu-demo"
+			mode="horizontal"
+			@select="handleSelect"
+			background-color="gray"
+			text-color="#fff"
+			active-text-color="#ffd04b"
+		>
+			<el-menu-item index="1"
+				><router-link :to="{ name: 'signIn' }"
+					>Sign in</router-link
+				></el-menu-item
+			>
+			<el-menu-item index="2"
+				><router-link :to="{ name: 'signUp' }"
+					>Sign up</router-link
+				></el-menu-item
+			>
+		</el-menu>
 		<el-row>
 			<el-col :span="8">
 				<el-card :body-style="{ padding: '0px' }">
