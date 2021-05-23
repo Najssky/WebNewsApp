@@ -1,12 +1,23 @@
 <template>
 	<el-container>
 		<el-menu>
-			<el-submenu index="1">
+			<el-item index="1">
+				<router-link :to="{ name: 'mainPage' }">
+					<el-button
+						style="width:90%;margin: 10px 5% 10px 5%"
+						type="primary"
+						icon="el-icon-s-home"
+					>
+						Back to main page
+					</el-button>
+				</router-link>
+			</el-item>
+			<el-submenu index="2">
 				<template slot="title"
 					><i class="el-icon-search"></i>Search your news</template
 				>
 				<el-menu-item-group>
-					<el-menu-item index="1-1">
+					<el-menu-item index="2-1">
 						<el-input
 							placeholder="Type something"
 							v-model="searchValue"
@@ -23,12 +34,12 @@
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
-			<el-submenu index="2">
+			<el-submenu index="3">
 				<template slot="title">
 					<i class="el-icon-date"></i>Pick a date
 				</template>
 				<el-menu-item-group>
-					<el-menu-item index="2-1">
+					<el-menu-item index="3-1">
 						<el-date-picker
 							v-model="pickerDate"
 							type="daterange"
@@ -44,13 +55,13 @@
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
-			<el-submenu index="3">
+			<el-submenu index="4">
 				<template slot="title"
 					><i class="el-icon-setting"></i>Rest of searching options
 				</template>
 				<el-menu-item-group>
 					<template slot="title">Sort by:</template>
-					<el-menu-item index="3-1"
+					<el-menu-item index="4-1"
 						><el-select v-model="sortBy" placeholder="Sort by:">
 							<el-option
 								label="By publish date"
@@ -65,7 +76,7 @@
 				</el-menu-item-group>
 				<el-menu-item-group>
 					<template slot="title">News per page:</template>
-					<el-menu-item index="3-2"
+					<el-menu-item index="4-2"
 						><el-select
 							v-model="maxPerPage"
 							placeholder="News per page:"
@@ -77,86 +88,86 @@
 						</el-select>
 					</el-menu-item>
 
-					<el-submenu index="3-3">
+					<el-submenu index="4-3">
 						<template slot="title">Choose your language</template>
-						<el-menu-item index="3-3-1">
+						<el-menu-item index="4-3-1">
 							<el-radio v-model="language" label="en">
 								English
 							</el-radio>
 						</el-menu-item>
-						<el-menu-item index="3-3-2">
+						<el-menu-item index="4-3-2">
 							<el-radio v-model="language" label="de">
 								Deutsche
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-3">
+						<el-menu-item index="4-3-3">
 							<el-radio v-model="language" label="es">
 								Española
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-4">
+						<el-menu-item index="4-3-4">
 							<el-radio v-model="language" label="fr">
 								Français
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-5">
+						<el-menu-item index="4-3-5">
 							<el-radio v-model="language" label="he">
 								עִברִית
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-6">
+						<el-menu-item index="4-3-6">
 							<el-radio v-model="language" label="it">
 								Italiano
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-7">
+						<el-menu-item index="4-3-7">
 							<el-radio v-model="language" label="nl">
 								Hollandsk
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-8">
+						<el-menu-item index="4-3-8">
 							<el-radio v-model="language" label="nr">
 								Norsk
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-9">
+						<el-menu-item index="4-3-9">
 							<el-radio v-model="language" label="ar">
 								عربى
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-10">
+						<el-menu-item index="4-3-10">
 							<el-radio v-model="language" label="pt">
 								Português
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-11">
+						<el-menu-item index="4-3-11">
 							<el-radio v-model="language" label="ru">
 								Pусский
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-12">
+						<el-menu-item index="4-3-12">
 							<el-radio v-model="language" label="se">
 								Sami
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-13">
+						<el-menu-item index="4-3-13">
 							<el-radio v-model="language" label="ud">
 								Universal Dependencies
 							</el-radio>
 						</el-menu-item>
 
-						<el-menu-item index="3-3-14">
+						<el-menu-item index="4-3-14">
 							<el-radio v-model="language" label="zh">
 								汉语
 							</el-radio>
@@ -202,7 +213,7 @@
 				<el-pagination
 					background
 					layout="prev, pager, next"
-					:total="1000"
+					:total="pages"
 					@current-change="handleCurrentChange"
 					:current-page="currentPage"
 					v-model="currentPage"
@@ -265,6 +276,7 @@ export default {
 			isLoading: false,
 			currentPage: 1,
 			maxPerPage: 5,
+			pages: 0,
 			totalResults: null,
 			loading: true,
 			language: "en",
@@ -322,7 +334,7 @@ export default {
 				.then((resp) => resp.json())
 				.then((data) => {
 					this.totalResults = data.totalResults;
-					console.log(this.totalResults)
+					console.log(this.totalResults);
 					data.articles.forEach((element) => {
 						this.articles.push(element);
 					});
@@ -354,27 +366,38 @@ export default {
 		searchValue(newValue) {
 			this.searchValue = newValue;
 			console.log(this.searchValue);
+			this.currentPage = 1;
+			this.fetchSwitch();
 		},
 		language(newValue) {
 			this.language = newValue;
 			this.loading = true;
+			this.currentPage = 1;
 			this.fetchSwitch();
 		},
 		sortBy(newValue) {
 			this.sortBy = newValue;
 			console.log(this.sortBy);
+			this.currentPage = 1;
 			this.loading = true;
 			this.fetchSwitch();
 		},
 		pickerDate(newValue) {
 			this.fromDate = moment(newValue[0]).format("YYYY-MM-DDTHH:mm:ss");
 			this.toDate = moment(newValue[1]).format("YYYY-MM-DDTHH:mm:ss");
+			this.currentPage = 1;
 			console.log("From: ", this.fromDate, " To: ", this.toDate);
 			this.fetchSwitch();
 		},
 		maxPerPage(newValue) {
 			this.maxPerPage = newValue;
+			this.currentPage = 1;
 			this.fetchSwitch();
+		},
+		totalResults(newValue) {
+			this.totalResults = newValue;
+			this.pages = this.totalResults / this.maxPerPage;
+			console.log(this.pages);
 		},
 	},
 };

@@ -1,63 +1,76 @@
 <template>
 	<el-container>
 		<el-menu>
-			<el-submenu index="1">
-				<template slot="title"
-					><i class="el-icon-search"></i>Search your news</template
-				>
-				<el-menu-item-group>
-					<el-menu-item index="1-1">
-						<el-input
-							placeholder="Type something"
-							v-model="searchTopValue"
-						></el-input>
-						<i
-							class="el-icon-search"
-							@click="fetchSearchedNews"
-						></i>
-					</el-menu-item>
-				</el-menu-item-group>
-			</el-submenu>
+			<el-menu-item index="1">
+				<router-link :to="{ name: 'mainPage' }">
+					<el-button
+						style="width:90%;margin: 10px 5% 10px 5%"
+						type="primary"
+						icon="el-icon-s-home"
+					>
+						Back to main page
+					</el-button>
+				</router-link>
+			</el-menu-item>
+			<el-menu-item-group> </el-menu-item-group>
 			<el-submenu index="2">
 				<template slot="title">
-					<i class="el-icon-date"></i>Pick a date
+					<i class="el-icon-s-flag"></i> Countries
 				</template>
 				<el-menu-item-group>
 					<el-menu-item index="2-1">
-						<el-date-picker
-							v-model="value"
-							type="daterange"
-							align="right"
-							unlink-panels
-							range-separator="To"
-							start-placeholder="Start date"
-							end-placeholder="End date"
-							:picker-options="pickerOptions"
-							:default-time="['00:00:00', '23:59:59']"
+						<el-select
+							v-model="country"
+							placeholder="Choose your country:"
 						>
-						</el-date-picker>
-					</el-menu-item>
-					<el-menu-item index="2-2" @click="datePicker">
-						<p>Component value：{{ value }}</p>
+							<el-option
+								v-for="item in countryOptions"
+								:key="item.value"
+								:label="item.label"
+								:value="item.value"
+							>
+							</el-option>
+						</el-select>
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
 			<el-submenu index="3">
-				<template slot="title"
-					><i class="el-icon-setting"></i>Rest of searching options
+				<template slot="title">
+					<i class="el-icon-price-tag"></i> Categories
 				</template>
 				<el-menu-item-group>
-					<template slot="title">Group 1</template>
-					<el-menu-item index="3-1">Option 1</el-menu-item>
-					<el-menu-item index="3-2">Option 2</el-menu-item>
+					<template slot="title">Choose your category::</template>
+					<el-menu-item index="3-1">
+						<el-select v-model="category">
+							<el-option
+								v-for="item in categoriesOptions"
+								:key="item.value"
+								:label="item.label"
+								:value="item.value"
+							>
+							</el-option>
+						</el-select>
+					</el-menu-item>
 				</el-menu-item-group>
-				<el-menu-item-group title="Group 2">
-					<el-menu-item index="3-3">Option 3</el-menu-item>
+			</el-submenu>
+			<el-submenu index="4">
+				<template slot="title"
+					><i class="el-icon-news"></i>News per page
+				</template>
+
+				<el-menu-item-group>
+					<el-menu-item index="4-1"
+						><el-select
+							v-model="maxPerPage"
+							placeholder="News per page:"
+						>
+							<el-option label="5" value="5"> </el-option>
+							<el-option label="10" value="10"> </el-option>
+							<el-option label="15" value="15"> </el-option>
+							<el-option label="20" value="20"> </el-option>
+						</el-select>
+					</el-menu-item>
 				</el-menu-item-group>
-				<el-submenu index="3-4">
-					<template slot="title">Option 4</template>
-					<el-menu-item index="3-4-1">Option 4-1</el-menu-item>
-				</el-submenu>
 			</el-submenu>
 		</el-menu>
 
@@ -94,6 +107,15 @@
 						<i class="fas fa-chevron-right "></i>
 					</footer>
 				</article>
+				<el-pagination
+					background
+					layout="prev, pager, next"
+					:total="pages"
+					@current-change="handleCurrentChange"
+					:current-page="currentPage"
+					v-model="currentPage"
+				>
+				</el-pagination>
 			</el-main>
 		</el-container>
 	</el-container>
@@ -103,110 +125,118 @@
 export default {
 	data() {
 		return {
-			pickerOptions: {
-				shortcuts: [
-					{
-						text: "Last week",
-						onClick(picker) {
-							const end = new Date();
-							const start = new Date();
-							start.setTime(
-								start.getTime() - 3600 * 1000 * 24 * 7,
-							);
-							picker.$emit("pick", [start, end]);
-						},
-					},
-					{
-						text: "Last month",
-						onClick(picker) {
-							const end = new Date();
-							const start = new Date();
-							start.setTime(
-								start.getTime() - 3600 * 1000 * 24 * 30,
-							);
-							picker.$emit("pick", [start, end]);
-						},
-					},
-					{
-						text: "Last 3 months",
-						onClick(picker) {
-							const end = new Date();
-							const start = new Date();
-							start.setTime(
-								start.getTime() - 3600 * 1000 * 24 * 90,
-							);
-							picker.$emit("pick", [start, end]);
-						},
-					},
-				],
-			},
-			currentDate: [],
-			searchTopValue: "",
-			value: [],
-			value2: [],
+			searchValue: null,
 			apiUrl: "",
 			apiKey: "fa6b08f1472043538a7ae22d2ff6d84c",
 			articles: [],
 			isLoading: false,
 			currentPage: 1,
-			maxPerPage: 10,
+			maxPerPage: 5,
+			pages: 0,
 			totalResults: null,
 			loading: true,
-			fromDate: "",
-			toDate: "",
+			language: "en",
+			date: "",
+			country: "",
+			countryOptions: [
+				{ value: "ae", label: "United Arab Emirates" },
+				{ value: "ar", label: "Argentina" },
+				{ value: "at", label: "Austria" },
+				{ value: "au", label: "Australia" },
+				{ value: "be", label: "Belgium" },
+				{ value: "bg", label: "Bulgaria" },
+				{ value: "br", label: "Brazil" },
+				{ value: "ca", label: "Canada" },
+				{ value: "ch", label: "Switzerland" },
+				{ value: "cn", label: "China" },
+				{ value: "co", label: "Colombia" },
+				{ value: "cu", label: "Cuba" },
+				{ value: "cz", label: "Czechia" },
+				{ value: "de", label: "Germany" },
+				{ value: "eg", label: "Egypt" },
+				{ value: "fr", label: "Frances" },
+				{ value: "gb", label: "United Kingdom of Great Britain" },
+				{ value: "gr", label: "Greece" },
+				{ value: "hk", label: "Hong Kongs" },
+				{ value: "hu", label: "Hungary" },
+				{ value: "id", label: "Indonesia" },
+				{ value: "ie", label: "Ireland" },
+				{ value: "il", label: "Israel" },
+				{ value: "in", label: "India" },
+				{ value: "it", label: "Italy" },
+				{ value: "jp", label: "Japan" },
+				{ value: "kr", label: "Korea" },
+				{ value: "lt", label: "Lithuania" },
+				{ value: "lv", label: "Latvia" },
+				{ value: "ma", label: "Morocco" },
+				{ value: "mx", label: "Mexico" },
+				{ value: "my", label: "Malaysia" },
+				{ value: "ng", label: "Nigeria" },
+				{ value: "nl", label: "Netherlands" },
+				{ value: "no", label: "Norway" },
+				{ value: "nz", label: "New Zealand" },
+				{ value: "ph", label: "Philippines" },
+				{ value: "pl", label: "Poland" },
+				{ value: "pt", label: "Portugal" },
+				{ value: "ro", label: "Romania" },
+				{ value: "rs", label: "Serbia" },
+				{ value: "ru", label: "Russia" },
+				{ value: "sa", label: "Saudi Arabia" },
+				{ value: "se", label: "Sweden" },
+				{ value: "sg", label: "Singapore" },
+				{ value: "si", label: "Slovenia" },
+				{ value: "sk", label: "Slovakia" },
+				{ value: "th", label: "Thailand" },
+				{ value: "tr", label: "Turkey" },
+				{ value: "tw", label: "Taiwan" },
+				{ value: "ua", label: "Ukraine" },
+				{ value: "us", label: "United States of America" },
+				{ value: "ve", label: "Venezuela" },
+				{ value: "za", label: "South Africa" },
+			],
+			category: "business",
+			categoriesOptions: [
+				{ value: "business", label: "Business" },
+				{ value: "entertainment", label: "Entertainment" },
+				{ value: "general", label: "General" },
+				{ value: "health", label: "Science" },
+				{ value: "sports", label: "Sports" },
+				{ value: "technology", label: "Technology" },
+				{ value: "science", label: "Science" },
+			],
 		};
 	},
 	methods: {
+		showValue() {
+			console.log(this.apiUrl);
+		},
+		setDate() {
+			this.fromDate == this.currentDate;
+		},
 		navigateTo(url) {
 			window.open(url);
-		},
-		datePicker() {
-			try {
-				console.log("Picked date: ", this.value);
-			} catch (error) {
-				console.log("Problem", error);
-			}
 		},
 		handleSelect(key, keyPath) {
 			console.log(key, keyPath);
 		},
 		resetData() {
-			this.currentPage = 1;
 			this.articles = [];
 		},
 		fetchNews() {
-			this.apiUrl =
-				"https://newsapi.org/v2/top-headlines?q=a&pageSize=" +
-				this.maxPerPage +
-				"&apiKey=" +
-				this.apiKey;
-
 			this.resetData();
+			this.apiUrl = `https://newsapi.org/v2/top-headlines?apiKey=${this.apiKey}&country=${this.country}&category=${this.category}&pageSize=${this.maxPerPage}&page=${this.currentPage}`;
+			this.isBusy = true;
 			this.fetchData();
-		},
-		fetchSearchedNews() {
-			if (this.searchTopValue == null || this.searchTopValue == "") {
-				this.fetchNews();
-			} else {
-				this.apiUrl =
-					"https://newsapi.org/v2/everything?q=" +
-					this.searchTopValue +
-					"&pageSize=" +
-					this.maxPerPage +
-					"&apiKey=" +
-					this.apiKey;
-				this.isBusy = true;
-
-				this.resetData();
-				this.fetchData();
-			}
+			console.log(this.apiUrl);
+			console.log(this.articles);
 		},
 		fetchData() {
-			let req = new Request(this.apiUrl + "&page=" + this.currentPage);
+			let req = new Request(this.apiUrl);
 			fetch(req)
 				.then((resp) => resp.json())
 				.then((data) => {
 					this.totalResults = data.totalResults;
+					console.log(this.totalResults);
 					data.articles.forEach((element) => {
 						this.articles.push(element);
 					});
@@ -216,20 +246,44 @@ export default {
 					console.log("Have some problems:", err);
 				});
 		},
+		handleCurrentChange(val) {
+			this.currentPage = val;
+			console.log(`current page: ${this.currentPage}`);
+			this.isLoading = true;
+			this.fetchNews();
+		},
 	},
 	created() {
 		this.fetchNews();
+		this.showValue();
+		this.setDate();
 	},
 	watch: {
-		searchValue(newValue) {
-			this.searchValue = newValue;
-			console.log(this.searchValue);
+		maxPerPage(newValue) {
+			this.maxPerPage = newValue;
+			this.currentPage = 1;
+			this.fetchNews();
+		},
+		totalResults(newValue) {
+			this.totalResults = newValue;
+			this.pages = this.totalResults / this.maxPerPage;
+			console.log(this.pages);
+		},
+		category(newValue) {
+			this.category = newValue;
+			this.currentPage = 1;
+			this.fetchNews();
+		},
+		country(newValue) {
+			this.country = newValue;
+			this.currentPage = 1;
+			this.fetchNews();
 		},
 	},
 };
 </script>
 
-<style>
+<style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@200&display=swap");
 html,
 body {
@@ -248,6 +302,12 @@ body {
 	background: rgb(47, 47, 47);
 	color: white;
 	font-family: "Roboto", sans-serif;
+}
+.el-submenu {
+	width: 400px;
+}
+el-menu {
+	width: 400px;
 }
 .result-list {
 	padding-top: 60px;
