@@ -1,6 +1,5 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import info from "./components/info.vue";
 import mainPage from "./components/mainPage.vue";
 import news from "./components/news.vue";
 import topNews from "./components/topNews.vue";
@@ -24,11 +23,6 @@ export default new VueRouter({
 			path: "/top-news",
 			name: "topNews",
 			component: topNews,
-		},
-		{
-			path: "/info",
-			name: "info",
-			component: info,
 		},
 	],
 });

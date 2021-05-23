@@ -210,15 +210,17 @@
 						<i class="fas fa-chevron-right "></i>
 					</footer>
 				</article>
-				<el-pagination
-					background
-					layout="prev, pager, next"
-					:total="pages"
-					@current-change="handleCurrentChange"
-					:current-page="currentPage"
-					v-model="currentPage"
-				>
-				</el-pagination>
+				<div class="container">
+					<el-pagination
+						background
+						layout="prev, pager, next"
+						:total="pages"
+						@current-change="handleCurrentChange"
+						:current-page="currentPage"
+						v-model="currentPage"
+					>
+					</el-pagination>
+				</div>
 			</el-main>
 		</el-container>
 	</el-container>
@@ -431,6 +433,10 @@ el-menu {
 }
 .result-list {
 	padding-top: 60px;
+}
+.container {
+	display: flex;
+	justify-content: center;
 }
 article {
 	display: grid;
