@@ -15,70 +15,87 @@
 		</el-menu>
 		<div class="container">
 			<el-form
-				:model="ruleForm"
+				:model="loginForm"
 				status-icon
 				:rules="rules"
-				ref="ruleForm"
+				ref="loginForm"
 				label-width="120px"
 				class="demo-ruleForm"
 			>
-				<el-form-item label="Login" prop="login">
+				<el-form-item label="Email" prop="email">
 					<el-input
-						type="login"
-						v-model="ruleForm.login"
+						type="email"
+						v-model="loginForm.email"
 						autocomplete="off"
 					></el-input>
 				</el-form-item>
 				<el-form-item label="Password" prop="pass">
 					<el-input
 						type="password"
-						v-model="ruleForm.pass"
+						v-model="loginForm.pass"
 						autocomplete="off"
-					></el-input>
+					>
+					</el-input>
 				</el-form-item>
 				<el-form-item>
-					<el-button type="primary" @click="submitForm('ruleForm')"
-						>Sign in</el-button
-					>
-					<el-button @click="resetForm('ruleForm')">Reset</el-button>
+					<el-button type="primary" @click="submitForm('ruleForm')">
+						Sign in
+					</el-button>
+					<el-button @click="resetForm('ruleForm')">
+						Reset
+					</el-button>
 				</el-form-item>
 			</el-form>
 		</div>
 	</div>
 </template>
 <script>
+import firebase from "firebase";
+
 export default {
 	data() {
-		var validateLogin = (rule, value, callback) => {
+		var validateEmail = (rule, value, callback) => {
 			if (value === "") {
-				callback(new Error("Please input the login"));
+				callback(new Error("Please input the e-mail"));
+			} else {
+				callback();
 			}
 		};
 		var validatePass = (rule, value, callback) => {
 			if (value === "") {
 				callback(new Error("Please input the password"));
 			} else {
-				if (this.ruleForm.checkPass !== "") {
-					this.$refs.ruleForm.validateField("checkPass");
-				}
 				callback();
 			}
 		};
 		return {
-			ruleForm: {
-				login: "",
+			loginForm: {
+				email: "",
 				pass: "",
 			},
 			rules: {
-				login: [{ validator: validateLogin, trigger: "blur" }],
+				email: [{ validator: validateEmail, trigger: "blur" }],
 				pass: [{ validator: validatePass, trigger: "blur" }],
 			},
 		};
 	},
 	methods: {
-		submitForm(formName) {
-			this.$refs[formName].validate((valid) => {
+		submitForm() {
+			this.$refs.loginForm.validate((valid) => {
 				if (valid) {
+					firebase
+						.auth()
+						.signInWithEmailAndPassword(
+							this.loginForm.email,
+							this.loginForm.pass,
+						)
+						// eslint-disable-next-line
+						.then((data) => {
+							this.$router.replace({ name: "mainPage" });
+						})
+						.catch((err) => {
+							this.error = err.message;
+						});
 					alert("submit!");
 				} else {
 					console.log("error submit!!");
@@ -86,8 +103,8 @@ export default {
 				}
 			});
 		},
-		resetForm(formName) {
-			this.$refs[formName].resetFields();
+		resetForm(loginForm) {
+			this.$refs[loginForm].resetFields();
 		},
 	},
 };

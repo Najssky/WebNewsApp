@@ -1,24 +1,34 @@
 <template>
 	<div class="app">
 		<el-menu
-			:default-active="activeIndex2"
 			class="el-menu-demo"
 			mode="horizontal"
-			@select="handleSelect"
 			background-color="gray"
 			text-color="#fff"
 			active-text-color="#ffd04b"
-		>
-			<el-menu-item index="1"
-				><router-link :to="{ name: 'signIn' }"
-					>Sign in</router-link
-				></el-menu-item
-			>
-			<el-menu-item index="2"
-				><router-link :to="{ name: 'signUp' }"
-					>Sign up</router-link
-				></el-menu-item
-			>
+			><template class="navbar" v-if="user.loggedIn">
+				<el-menu-item> Hi {{ user.data.displayName }}! </el-menu-item>
+				<el-menu-item @click="signOut">
+					Sign Out
+				</el-menu-item>
+				<el-menu-item>
+					<router-link :to="{ name: 'profile' }">
+						Your profile
+					</router-link>
+				</el-menu-item>
+			</template>
+			<div class="navbar" v-else>
+				<router-link :to="{ name: 'signIn' }">
+					<el-menu-item>
+						Sign in
+					</el-menu-item>
+				</router-link>
+				<router-link :to="{ name: 'signUp' }">
+					<el-menu-item>
+						Sign up
+					</el-menu-item>
+				</router-link>
+			</div>
 		</el-menu>
 		<el-row>
 			<el-col :span="8">
@@ -59,7 +69,30 @@
 </template>
 
 <script>
-export default {};
+import { mapGetters } from "vuex";
+import firebase from "firebase";
+
+export default {
+	computed: {
+		// map `this.user` to `this.$store.getters.user`
+		...mapGetters({
+			user: "user",
+		}),
+	},
+	methods: {
+		signOut() {
+			console.log("here");
+			firebase
+				.auth()
+				.signOut()
+				.then(() => {
+					this.$router.replace({
+						name: "mainPage",
+					});
+				});
+		},
+	},
+};
 </script>
 
 <style scoped>
@@ -71,7 +104,9 @@ body {
 	padding: 0px !important;
 	background: rgb(49, 49, 49);
 }
-
+.navbar {
+	display: flex;
+}
 .app {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;

@@ -15,58 +15,77 @@
 		</el-menu>
 		<div class="container">
 			<el-form
-				:model="ruleForm"
+				:model="regForm"
 				status-icon
 				:rules="rules"
-				ref="ruleForm"
+				ref="regForm"
 				label-width="120px"
 				class="demo-ruleForm"
 			>
-				<el-form-item label="Login" prop="login">
+				<el-form-item label="Email" prop="email">
 					<el-input
-						type="login"
-						v-model="ruleForm.login"
+						type="email"
+						v-model="regForm.email"
+						autocomplete="off"
+					></el-input>
+				</el-form-item>
+				<el-form-item label="Name" prop="name">
+					<el-input
+						type="name"
+						v-model="regForm.name"
 						autocomplete="off"
 					></el-input>
 				</el-form-item>
 				<el-form-item label="Password" prop="pass">
 					<el-input
 						type="password"
-						v-model="ruleForm.pass"
+						v-model="regForm.pass"
 						autocomplete="off"
 					></el-input>
 				</el-form-item>
 				<el-form-item label="Confirm" prop="checkPass">
 					<el-input
 						type="password"
-						v-model="ruleForm.checkPass"
+						v-model="regForm.checkPass"
 						autocomplete="off"
 					></el-input>
 				</el-form-item>
 				<el-form-item>
-					<el-button type="primary" @click="submitForm('ruleForm')"
+					<el-button type="primary" @click="submitForm('regForm')"
 						>Submit</el-button
 					>
-					<el-button @click="resetForm('ruleForm')">Reset</el-button>
+					<el-button @click="resetForm('regForm')">Reset</el-button>
 				</el-form-item>
 			</el-form>
 		</div>
 	</div>
 </template>
 <script>
+import firebase from "firebase/app";
+import "firebase/auth";
+
 export default {
 	data() {
+		var validateEmail = (rule, value, callback) => {
+			if (value === "") {
+				callback(new Error("Please input the email"));
+			} else {
+				callback();
+			}
+		};
 		var validateLogin = (rule, value, callback) => {
 			if (value === "") {
 				callback(new Error("Please input the login"));
+			} else {
+				callback();
 			}
 		};
 		var validatePass = (rule, value, callback) => {
-			if (value === "") {
+			if (value === "" || value.length < 6) {
 				callback(new Error("Please input the password"));
 			} else {
-				if (this.ruleForm.checkPass !== "") {
-					this.$refs.ruleForm.validateField("checkPass");
+				if (this.regForm.checkPass !== "") {
+					this.$refs.regForm.validateField("checkPass");
 				}
 				callback();
 			}
@@ -74,19 +93,21 @@ export default {
 		var validatePass2 = (rule, value, callback) => {
 			if (value === "") {
 				callback(new Error("Please input the password again"));
-			} else if (value !== this.ruleForm.pass) {
+			} else if (value !== this.regForm.pass) {
 				callback(new Error("Two inputs don't match!"));
 			} else {
 				callback();
 			}
 		};
 		return {
-			ruleForm: {
+			regForm: {
+				email: "",
 				login: "",
 				pass: "",
 				checkPass: "",
 			},
 			rules: {
+				email: [{ validator: validateEmail, trigger: "blur" }],
 				login: [{ validator: validateLogin, trigger: "blur" }],
 				pass: [{ validator: validatePass, trigger: "blur" }],
 				checkPass: [{ validator: validatePass2, trigger: "blur" }],
@@ -94,18 +115,34 @@ export default {
 		};
 	},
 	methods: {
-		submitForm(formName) {
-			this.$refs[formName].validate((valid) => {
+		submitForm() {
+			this.$refs.regForm.validate((valid) => {
 				if (valid) {
-					alert("submit!");
+					firebase
+						.auth()
+						.createUserWithEmailAndPassword(
+							this.regForm.email,
+							this.regForm.pass,
+						)
+						.then((data) => {
+							data.user
+								.updateProfile({
+									displayName: this.regForm.name,
+								})
+								.then(() => {});
+						})
+						.catch((err) => {
+							this.error = err.message;
+						});
+					alert("User add successfully!");
 				} else {
 					console.log("error submit!!");
 					return false;
 				}
 			});
 		},
-		resetForm(formName) {
-			this.$refs[formName].resetFields();
+		resetForm(regForm) {
+			this.$refs[regForm].resetFields();
 		},
 	},
 };
