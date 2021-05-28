@@ -1,7 +1,7 @@
 <template>
 	<el-container>
 		<el-menu>
-			<el-item index="1">
+			<el-menu-item index="1">
 				<router-link :to="{ name: 'mainPage' }">
 					<el-button
 						style="width:90%;margin: 10px 5% 10px 5%"
@@ -11,7 +11,7 @@
 						Back to main page
 					</el-button>
 				</router-link>
-			</el-item>
+			</el-menu-item>
 			<el-submenu index="2">
 				<template slot="title"
 					><i class="el-icon-search"></i>Search your news</template
@@ -61,8 +61,8 @@
 				</template>
 				<el-menu-item-group>
 					<template slot="title">Sort by:</template>
-					<el-menu-item index="4-1"
-						><el-select v-model="sortBy" placeholder="Sort by:">
+					<el-menu-item index="4-1">
+						<el-select v-model="sortBy" placeholder="Sort by:">
 							<el-option
 								label="By publish date"
 								value="publishedAt"
@@ -71,8 +71,9 @@
 							<el-option label="By popularity" value="popularity">
 							</el-option>
 							<el-option label="By relevancy" value="relevancy">
-							</el-option> </el-select
-					></el-menu-item>
+							</el-option>
+						</el-select>
+					</el-menu-item>
 				</el-menu-item-group>
 				<el-menu-item-group>
 					<template slot="title">News per page:</template>
@@ -87,92 +88,20 @@
 							<el-option label="20" value="20"> </el-option>
 						</el-select>
 					</el-menu-item>
-
-					<el-submenu index="4-3">
-						<template slot="title">Choose your language</template>
-						<el-menu-item index="4-3-1">
-							<el-radio v-model="language" label="en">
-								English
-							</el-radio>
-						</el-menu-item>
-						<el-menu-item index="4-3-2">
-							<el-radio v-model="language" label="de">
-								Deutsche
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-3">
-							<el-radio v-model="language" label="es">
-								Española
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-4">
-							<el-radio v-model="language" label="fr">
-								Français
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-5">
-							<el-radio v-model="language" label="he">
-								עִברִית
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-6">
-							<el-radio v-model="language" label="it">
-								Italiano
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-7">
-							<el-radio v-model="language" label="nl">
-								Hollandsk
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-8">
-							<el-radio v-model="language" label="nr">
-								Norsk
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-9">
-							<el-radio v-model="language" label="ar">
-								عربى
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-10">
-							<el-radio v-model="language" label="pt">
-								Português
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-11">
-							<el-radio v-model="language" label="ru">
-								Pусский
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-12">
-							<el-radio v-model="language" label="se">
-								Sami
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-13">
-							<el-radio v-model="language" label="ud">
-								Universal Dependencies
-							</el-radio>
-						</el-menu-item>
-
-						<el-menu-item index="4-3-14">
-							<el-radio v-model="language" label="zh">
-								汉语
-							</el-radio>
-						</el-menu-item>
-					</el-submenu>
+				</el-menu-item-group>
+				<el-menu-item-group>
+					<template slot="title">Choose your language</template>
+					<el-menu-item index="4-3">
+						<el-select v-model="language">
+							<el-option
+								v-for="item in languageOptions"
+								:key="item.value"
+								:label="item.label"
+								:value="item.value"
+							>
+							</el-option>
+						</el-select>
+					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
 		</el-menu>
@@ -228,6 +157,8 @@
 
 <script>
 import moment from "moment";
+import { mapGetters } from "vuex";
+import firebase from "firebase";
 
 export default {
 	data() {
@@ -291,7 +222,31 @@ export default {
 				{ value: "popularity", label: "By popularity" },
 				{ value: "relevancy", label: "By relevancy" },
 			],
+			languageOptions: [
+				{ value: "en", label: "English" },
+				{ value: "de", label: "Deutsche" },
+				{ value: "es", label: "Española" },
+				{ value: "fr", label: "Français" },
+				{ value: "it", label: "Italiano" },
+				{ value: "he", label: "עִברִית" },
+				{ value: "nl", label: "Hollandsk" },
+				{ value: "nr", label: "Norsk" },
+				{ value: "ar", label: "عربى" },
+				{ value: "pt", label: "Português" },
+				{ value: "ru", label: "Pусский" },
+				{ value: "se", label: "Sami" },
+				{ value: "ud", label: "Universal Dependencies" },
+				{ value: "zh", label: "汉语" },
+			],
+			database: firebase.database(),
+			userId: this.$store.getters.user.data.userId,
 		};
+	},
+	computed: {
+		// map `this.user` to `this.$store.getters.user`
+		...mapGetters({
+			user: "user",
+		}),
 	},
 	methods: {
 		showValue() {
@@ -358,11 +313,34 @@ export default {
 			console.log(`current page: ${this.currentPage}`);
 			this.fetchSwitch();
 		},
+		getUserConfig() {
+			firebase
+				.database()
+				.ref("userConfig/" + this.userId)
+				.get()
+				.then((snapshot) => {
+					if (snapshot.exists()) {
+						this.sortBy = snapshot.val().sortBy;
+						this.maxPerPage = snapshot.val().pageSize;
+						this.language = snapshot.val().language;
+						this.category = snapshot.val().category;
+						this.country = snapshot.val().country;
+						console.log(snapshot.val());
+						this.fetchSwitch();
+					} else {
+						console.log("No data available");
+					}
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		},
 	},
 	created() {
 		this.fetchNews();
 		this.showValue();
 		this.setDate();
+		this.getUserConfig();
 	},
 	watch: {
 		searchValue(newValue) {

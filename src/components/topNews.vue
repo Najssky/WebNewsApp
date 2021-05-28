@@ -39,7 +39,7 @@
 					<i class="el-icon-price-tag"></i> Categories
 				</template>
 				<el-menu-item-group>
-					<template slot="title">Choose your category::</template>
+					<template slot="title">Choose your category:</template>
 					<el-menu-item index="3-1">
 						<el-select v-model="category">
 							<el-option
@@ -124,6 +124,9 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+import firebase from "firebase";
+
 export default {
 	data() {
 		return {
@@ -201,12 +204,19 @@ export default {
 				{ value: "business", label: "Business" },
 				{ value: "entertainment", label: "Entertainment" },
 				{ value: "general", label: "General" },
-				{ value: "health", label: "Science" },
+				{ value: "health", label: "Health" },
 				{ value: "sports", label: "Sports" },
 				{ value: "technology", label: "Technology" },
 				{ value: "science", label: "Science" },
 			],
+			database: firebase.database(),
+			userId: this.$store.getters.user.data.userId,
 		};
+	},
+	computed: {
+		...mapGetters({
+			user: "user",
+		}),
 	},
 	methods: {
 		showValue() {
@@ -254,11 +264,33 @@ export default {
 			this.isLoading = true;
 			this.fetchNews();
 		},
+		getUserConfig() {
+			firebase
+				.database()
+				.ref("userConfig/" + this.userId)
+				.get()
+				.then((snapshot) => {
+					if (snapshot.exists()) {
+						this.sortBy = snapshot.val().sortBy;
+						this.maxPerPage = snapshot.val().pageSize;
+						this.language = snapshot.val().language;
+						this.category = snapshot.val().category;
+						this.country = snapshot.val().country;
+						console.log(snapshot.val());
+					} else {
+						console.log("No data available");
+					}
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		},
 	},
 	created() {
 		this.fetchNews();
 		this.showValue();
 		this.setDate();
+		this.getUserConfig();
 	},
 	watch: {
 		maxPerPage(newValue) {
