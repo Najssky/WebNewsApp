@@ -1,7 +1,7 @@
 <template>
 	<el-container>
 		<el-menu>
-			<el-menu-item index="1">
+			<el-menu-item>
 				<router-link :to="{ name: 'mainPage' }">
 					<el-button
 						style="width:90%;margin: 10px 5% 10px 5%"
@@ -12,12 +12,12 @@
 					</el-button>
 				</router-link>
 			</el-menu-item>
-			<el-submenu index="2">
+			<el-submenu>
 				<template slot="title"
 					><i class="el-icon-search"></i>Search your news</template
 				>
 				<el-menu-item-group>
-					<el-menu-item index="2-1">
+					<el-menu-item>
 						<el-input
 							placeholder="Type something"
 							v-model="searchValue"
@@ -28,18 +28,21 @@
 						<el-button
 							type="default"
 							icon="el-icon-search "
-							@click="fetchSearchedNews()"
+							@click="
+								resetPages();
+								fetchNews();
+							"
 							style="margin-left:10px;"
 						></el-button>
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
-			<el-submenu index="3">
+			<el-submenu>
 				<template slot="title">
 					<i class="el-icon-date"></i>Pick a date
 				</template>
 				<el-menu-item-group>
-					<el-menu-item index="3-1">
+					<el-menu-item>
 						<el-date-picker
 							v-model="pickerDate"
 							type="daterange"
@@ -55,44 +58,45 @@
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
-			<el-submenu index="4">
+			<el-submenu>
 				<template slot="title"
 					><i class="el-icon-setting"></i>Rest of searching options
 				</template>
 				<el-menu-item-group>
 					<template slot="title">Sort by:</template>
-					<el-menu-item index="4-1">
+					<el-menu-item>
 						<el-select v-model="sortBy" placeholder="Sort by:">
 							<el-option
 								label="By publish date"
-								value="publishedAt"
+								value="published_on"
 							>
 							</el-option>
-							<el-option label="By popularity" value="popularity">
-							</el-option>
-							<el-option label="By relevancy" value="relevancy">
+							<el-option
+								label="By relevancy"
+								value="relevance_score"
+							>
 							</el-option>
 						</el-select>
 					</el-menu-item>
 				</el-menu-item-group>
 				<el-menu-item-group>
-					<template slot="title">News per page:</template>
-					<el-menu-item index="4-2"
-						><el-select
-							v-model="maxPerPage"
-							placeholder="News per page:"
-						>
-							<el-option label="5" value="5"> </el-option>
-							<el-option label="10" value="10"> </el-option>
-							<el-option label="15" value="15"> </el-option>
-							<el-option label="20" value="20"> </el-option>
+					<template slot="title"> Choose your category: </template>
+					<el-menu-item>
+						<el-select v-model="category" placeholder="Category:">
+							<el-option
+								v-for="item in categoriesOptions"
+								:key="item.value"
+								:label="item.label"
+								:value="item.value"
+							>
+							</el-option>
 						</el-select>
 					</el-menu-item>
 				</el-menu-item-group>
 				<el-menu-item-group>
-					<template slot="title">Choose your language</template>
-					<el-menu-item index="4-3">
-						<el-select v-model="language">
+					<template slot="title"> Choose your language: </template>
+					<el-menu-item>
+						<el-select v-model="language" placeholder="Language:">
 							<el-option
 								v-for="item in languageOptions"
 								:key="item.value"
@@ -122,8 +126,8 @@
 				>
 					<header>
 						<img
-							v-if="article.urlToImage"
-							:src="article.urlToImage"
+							v-if="article.image_url"
+							:src="article.image_url"
 							alt=""
 						/>
 						<i v-else class="fas fa-image"></i>
@@ -200,46 +204,78 @@ export default {
 					},
 				],
 			},
-			searchValue: null,
+			searchValue: "",
 			pickerDate: null,
 			value2: [],
 			apiUrl: "",
-			apiKey: "fa6b08f1472043538a7ae22d2ff6d84c",
+			apiKey: "MuxY4plSrRa54LHQWU4tureqf1i0HkeE16V5zb3u",
 			articles: [],
 			isLoading: false,
 			currentPage: 1,
-			maxPerPage: 5,
 			pages: 0,
-			totalResults: null,
 			loading: true,
-			language: "en",
 			date: "",
-			fromDate: this.$dn.date(new Date(), "yyyy-mm-dd", "-"),
-			toDate: this.$dn.date(new Date(), "yyyy-mm-dd", "-"),
-			sortBy: "publishedAt",
+			fromDate: "",
+			toDate: "",
+			category: "",
+			categoriesOptions: [
+				{ value: "business", label: "Business" },
+				{ value: "entertainment", label: "Entertainment" },
+				{ value: "general", label: "General" },
+				{ value: "health", label: "Health" },
+				{ value: "sports", label: "Sports" },
+				{ value: "tech", label: "Technology" },
+				{ value: "science", label: "Science" },
+				{ value: "politics", label: "Politics" },
+				{ value: "food", label: "Food" },
+				{ value: "travel", label: "Travel" },
+			],
+			sortBy: "",
 			sortOptions: [
 				{ value: "publishedAt", label: "By public date" },
 				{ value: "popularity", label: "By popularity" },
 				{ value: "relevancy", label: "By relevancy" },
 			],
+			language: "",
 			languageOptions: [
 				{ value: "en", label: "English" },
+				{ value: "pl", label: "Polski" },
+				{ value: "cs", label: "čeština" },
+				{ value: "da", label: "Dansk" },
+				{ value: "el", label: "Ελληνικά" },
+				{ value: "et", label: "Eestlane" },
+				{ value: "fa", label: "فارسی" },
+				{ value: "fi", label: "Suomalainen" },
+				{ value: "hi", label: "हिंदी" },
+				{ value: "hr", label: "Hrvatski" },
+				{ value: "hu", label: "Magyar" },
+				{ value: "id", label: "bahasa Indonesia" },
+				{ value: "ja", label: "日本語" },
+				{ value: "ko", label: "한국어" },
+				{ value: "lt", label: "Lietuvis" },
+				{ value: "ro", label: "Română" },
+				{ value: "sk", label: "Slovák" },
+				{ value: "sv", label: "Svenska" },
+				{ value: "th", label: "ไทย" },
+				{ value: "ta", label: "தமிழ்" },
+				{ value: "tr", label: "Türk" },
+				{ value: "vi", label: "Tiếng Việt" },
 				{ value: "de", label: "Deutsche" },
 				{ value: "es", label: "Española" },
 				{ value: "fr", label: "Français" },
 				{ value: "it", label: "Italiano" },
 				{ value: "he", label: "עִברִית" },
 				{ value: "nl", label: "Hollandsk" },
-				{ value: "nr", label: "Norsk" },
+				{ value: "no", label: "Norsk" },
+				{ value: "bg", label: "Belgian" },
 				{ value: "ar", label: "عربى" },
 				{ value: "pt", label: "Português" },
 				{ value: "ru", label: "Pусский" },
-				{ value: "se", label: "Sami" },
-				{ value: "ud", label: "Universal Dependencies" },
+				{ value: "uk", label: "" },
 				{ value: "zh", label: "汉语" },
 			],
 			database: firebase.database(),
-			userId: this.$store.getters.user.data.userId,
+			userId: "",
 		};
 	},
 	computed: {
@@ -249,12 +285,6 @@ export default {
 		}),
 	},
 	methods: {
-		showValue() {
-			console.log(this.apiUrl);
-		},
-		setDate() {
-			this.fromDate == this.currentDate;
-		},
 		navigateTo(url) {
 			window.open(url);
 		},
@@ -271,9 +301,12 @@ export default {
 		resetData() {
 			this.articles = [];
 		},
+		resetPages() {
+			this.currentPage = 1;
+		},
 		fetchNews() {
 			this.resetData();
-			this.apiUrl = `https://newsapi.org/v2/everything?q=a&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}&sortBy${this.sortBy}&page=${this.currentPage}`;
+			this.apiUrl = `https://api.thenewsapi.com/v1/news/all?api_token=${this.apiKey}&search=${this.searchValue}&language=${this.language}&categories=${this.category}&sort=${this.sortBy}&page=${this.currentPage}`;
 			this.isBusy = true;
 			this.fetchData();
 			console.log(this.apiUrl);
@@ -281,7 +314,7 @@ export default {
 		},
 		fetchSearchedNews() {
 			this.resetData();
-			this.apiUrl = `https://newsapi.org/v2/everything?q=${this.searchValue}&pageSize=${this.maxPerPage}&apiKey=${this.apiKey}&sortBy=${this.sortBy}&language=${this.language}&from=${this.fromDate}&to=${this.toDate}&page=${this.currentPage}`;
+			this.apiUrl = `https://newsapi.org/v2/everything?`;
 			this.isBusy = true;
 			this.fetchData();
 		},
@@ -289,51 +322,54 @@ export default {
 			let req = new Request(this.apiUrl);
 			fetch(req)
 				.then((resp) => resp.json())
-				.then((data) => {
-					this.totalResults = data.totalResults;
-					console.log(this.totalResults);
-					data.articles.forEach((element) => {
+				.then((result) => {
+					result.data.forEach((element) => {
 						this.articles.push(element);
 					});
+					this.pages = result.meta.found / 5;
+					console.log(this.articles);
 					this.loading = false;
 				})
 				.catch((err) => {
 					console.log("Have some problems:", err);
 				});
 		},
-		fetchSwitch() {
-			if (this.searchValue == null || this.searchValue == "") {
-				this.fetchNews();
-			} else {
-				this.fetchSearchedNews();
-			}
-		},
 		handleCurrentChange(val) {
 			this.currentPage = val;
 			console.log(`current page: ${this.currentPage}`);
-			this.fetchSwitch();
+			this.fetchNews();
 		},
 		getUserConfig() {
-			firebase
-				.database()
-				.ref("userConfig/" + this.userId)
-				.get()
-				.then((snapshot) => {
-					if (snapshot.exists()) {
-						this.sortBy = snapshot.val().sortBy;
-						this.maxPerPage = snapshot.val().pageSize;
-						this.language = snapshot.val().language;
-						this.category = snapshot.val().category;
-						this.country = snapshot.val().country;
-						console.log(snapshot.val());
-						this.fetchSwitch();
-					} else {
-						console.log("No data available");
-					}
-				})
-				.catch((error) => {
-					console.error(error);
-				});
+			if (this.userId !== "") {
+				firebase
+					.database()
+					.ref("userConfig/" + this.userId)
+					.get()
+					.then((snapshot) => {
+						if (snapshot.exists()) {
+							this.sortBy = snapshot.val().sortBy;
+							this.language = snapshot.val().language;
+							this.category = snapshot.val().category;
+							this.country = snapshot.val().country;
+							console.log(snapshot.val());
+							this.fetchNews();
+						} else {
+							console.log("No data available");
+						}
+					})
+					.catch((error) => {
+						console.error(error);
+					});
+			} else {
+				console.log("User is not logged");
+			}
+		},
+		getUserId() {
+			if (this.$store.getters.user.data.userId != null) {
+				this.userId = this.$store.getters.user.data.userId;
+			} else {
+				console.log("User is not logged");
+			}
 		},
 	},
 	created() {
@@ -341,43 +377,28 @@ export default {
 		this.showValue();
 		this.setDate();
 		this.getUserConfig();
+		this.getUserId();
 	},
 	watch: {
-		searchValue(newValue) {
-			this.searchValue = newValue;
-			console.log(this.searchValue);
-			this.currentPage = 1;
-			this.fetchSwitch();
-		},
 		language(newValue) {
 			this.language = newValue;
 			this.loading = true;
 			this.currentPage = 1;
-			this.fetchSwitch();
+			this.fetchNews();
 		},
 		sortBy(newValue) {
 			this.sortBy = newValue;
 			console.log(this.sortBy);
 			this.currentPage = 1;
 			this.loading = true;
-			this.fetchSwitch();
+			this.fetchNews();
 		},
 		pickerDate(newValue) {
 			this.fromDate = moment(newValue[0]).format("YYYY-MM-DDTHH:mm:ss");
 			this.toDate = moment(newValue[1]).format("YYYY-MM-DDTHH:mm:ss");
 			this.currentPage = 1;
 			console.log("From: ", this.fromDate, " To: ", this.toDate);
-			this.fetchSwitch();
-		},
-		maxPerPage(newValue) {
-			this.maxPerPage = newValue;
-			this.currentPage = 1;
-			this.fetchSwitch();
-		},
-		totalResults(newValue) {
-			this.totalResults = newValue;
-			this.pages = this.totalResults / this.maxPerPage;
-			console.log(this.pages);
+			this.fetchNews();
 		},
 	},
 };
