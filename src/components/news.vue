@@ -107,6 +107,13 @@
 						</el-select>
 					</el-menu-item>
 				</el-menu-item-group>
+				<el-menu-item-group>
+					<el-menu-item>
+						<el-button icon="el-icon-search"
+							>Search with your preferences</el-button
+						>
+					</el-menu-item>
+				</el-menu-item-group>
 			</el-submenu>
 		</el-menu>
 
@@ -206,7 +213,6 @@ export default {
 			},
 			searchValue: "",
 			pickerDate: null,
-			value2: [],
 			apiUrl: "",
 			apiKey: "MuxY4plSrRa54LHQWU4tureqf1i0HkeE16V5zb3u",
 			articles: [],
@@ -279,8 +285,8 @@ export default {
 		};
 	},
 	computed: {
-		// map `this.user` to `this.$store.getters.user`
 		...mapGetters({
+			status: "authStatus",
 			user: "user",
 		}),
 	},
@@ -305,16 +311,9 @@ export default {
 			this.currentPage = 1;
 		},
 		fetchNews() {
+			console.log("dupa");
 			this.resetData();
 			this.apiUrl = `https://api.thenewsapi.com/v1/news/all?api_token=${this.apiKey}&search=${this.searchValue}&language=${this.language}&categories=${this.category}&sort=${this.sortBy}&page=${this.currentPage}`;
-			this.isBusy = true;
-			this.fetchData();
-			console.log(this.apiUrl);
-			console.log(this.articles);
-		},
-		fetchSearchedNews() {
-			this.resetData();
-			this.apiUrl = `https://newsapi.org/v2/everything?`;
 			this.isBusy = true;
 			this.fetchData();
 		},
@@ -340,18 +339,17 @@ export default {
 			this.fetchNews();
 		},
 		getUserConfig() {
-			if (this.userId !== "") {
+			if (this.status == "success") {
 				firebase
 					.database()
-					.ref("userConfig/" + this.userId)
+					.ref("Users/" + this.user.login + "/Preferences")
 					.get()
 					.then((snapshot) => {
 						if (snapshot.exists()) {
+							console.log;
 							this.sortBy = snapshot.val().sortBy;
 							this.language = snapshot.val().language;
-							this.category = snapshot.val().category;
-							this.country = snapshot.val().country;
-							console.log(snapshot.val());
+							this.category = snapshot.val().categories;
 							this.fetchNews();
 						} else {
 							console.log("No data available");
@@ -361,44 +359,32 @@ export default {
 						console.error(error);
 					});
 			} else {
-				console.log("User is not logged");
-			}
-		},
-		getUserId() {
-			if (this.$store.getters.user.data.userId != null) {
-				this.userId = this.$store.getters.user.data.userId;
-			} else {
+				this.fetchNews();
 				console.log("User is not logged");
 			}
 		},
 	},
 	created() {
-		this.fetchNews();
-		this.showValue();
-		this.setDate();
 		this.getUserConfig();
-		this.getUserId();
 	},
 	watch: {
 		language(newValue) {
 			this.language = newValue;
-			this.loading = true;
 			this.currentPage = 1;
-			this.fetchNews();
 		},
 		sortBy(newValue) {
 			this.sortBy = newValue;
 			console.log(this.sortBy);
 			this.currentPage = 1;
-			this.loading = true;
-			this.fetchNews();
 		},
 		pickerDate(newValue) {
 			this.fromDate = moment(newValue[0]).format("YYYY-MM-DDTHH:mm:ss");
 			this.toDate = moment(newValue[1]).format("YYYY-MM-DDTHH:mm:ss");
 			this.currentPage = 1;
-			console.log("From: ", this.fromDate, " To: ", this.toDate);
-			this.fetchNews();
+		},
+		category(newValue) {
+			this.category = newValue;
+			this.currentPage = 1;
 		},
 	},
 };

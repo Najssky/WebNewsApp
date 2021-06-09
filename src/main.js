@@ -11,7 +11,7 @@ import VueAxios from "vue-axios";
 import VueDateNow from "vue-date-now";
 import App from "./App.vue";
 import router from "./router";
-import store from "./store";
+import store from "./store/store";
 
 Vue.config.productionTip = false;
 
@@ -38,9 +38,6 @@ const configOptions = {
 };
 
 firebase.initializeApp(configOptions);
-firebase.auth().onAuthStateChanged((user) => {
-	store.dispatch("fetchUser", user);
-});
 
 axios.interceptors.request.eject(requestInterceptor);
 axios.interceptors.request.eject(responseInterceptor);

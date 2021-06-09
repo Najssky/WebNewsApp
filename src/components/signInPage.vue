@@ -22,10 +22,10 @@
 				label-width="120px"
 				class="demo-ruleForm"
 			>
-				<el-form-item label="Email" prop="email">
+				<el-form-item label="Login" prop="login">
 					<el-input
-						type="email"
-						v-model="loginForm.email"
+						type="login"
+						v-model="loginForm.login"
 						autocomplete="off"
 					></el-input>
 				</el-form-item>
@@ -38,10 +38,10 @@
 					</el-input>
 				</el-form-item>
 				<el-form-item>
-					<el-button type="primary" @click="submitForm('ruleForm')">
+					<el-button type="primary" @click="submitForm('loginForm')">
 						Sign in
 					</el-button>
-					<el-button @click="resetForm('ruleForm')">
+					<el-button @click="resetForm('loginForm')">
 						Reset
 					</el-button>
 				</el-form-item>
@@ -70,7 +70,7 @@ export default {
 		};
 		return {
 			loginForm: {
-				email: "",
+				login: "",
 				pass: "",
 			},
 			rules: {
@@ -81,30 +81,40 @@ export default {
 	},
 	methods: {
 		submitForm() {
-			this.$refs.loginForm.validate((valid) => {
-				if (valid) {
-					firebase
-						.auth()
-						.signInWithEmailAndPassword(
-							this.loginForm.email,
-							this.loginForm.pass,
-						)
-						// eslint-disable-next-line
-						.then((data) => {
-							this.$router.replace({ name: "mainPage" });
-						})
-						.catch((err) => {
-							this.error = err.message;
-						});
-					alert("submit!");
-				} else {
-					console.log("error submit!!");
-					return false;
-				}
-			});
+			try {
+				firebase
+					.database()
+					.ref("Users/" + this.loginForm.login + "/Credentials")
+					.get()
+					.then((snapshot) => {
+						if (snapshot.exists()) {
+							this.userAuth(
+								snapshot.val().login,
+								snapshot.val().password,
+							);
+						} else {
+							console.log("No data available");
+						}
+					});
+			} catch (error) {
+				console.log("Something goes wrong: /n", error);
+			}
 		},
 		resetForm(loginForm) {
 			this.$refs[loginForm].resetFields();
+		},
+		userAuth(login, password) {
+			if (
+				this.loginForm.login == login &&
+				this.loginForm.pass == password
+			) {
+				let login = this.loginForm.login;
+				this.$store.dispatch("login", { login });
+				alert("Sign in successfully");
+				this.$router.replace({ name: "mainPage" });
+			} else {
+				alert("Something goes wrong. Check your login data!");
+			}
 		},
 	},
 };

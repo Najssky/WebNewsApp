@@ -22,6 +22,13 @@
 				label-width="120px"
 				class="demo-ruleForm"
 			>
+				<el-form-item label="Login" prop="login">
+					<el-input
+						type="login"
+						v-model="regForm.login"
+						autocomplete="off"
+					></el-input>
+				</el-form-item>
 				<el-form-item label="Email" prop="email">
 					<el-input
 						type="email"
@@ -29,13 +36,7 @@
 						autocomplete="off"
 					></el-input>
 				</el-form-item>
-				<el-form-item label="Name" prop="name">
-					<el-input
-						type="name"
-						v-model="regForm.name"
-						autocomplete="off"
-					></el-input>
-				</el-form-item>
+
 				<el-form-item label="Password" prop="pass">
 					<el-input
 						type="password"
@@ -112,13 +113,14 @@ export default {
 				pass: [{ validator: validatePass, trigger: "blur" }],
 				checkPass: [{ validator: validatePass2, trigger: "blur" }],
 			},
+			hashedPassword: "",
 		};
 	},
 	methods: {
 		submitForm() {
 			this.$refs.regForm.validate((valid) => {
 				if (valid) {
-					firebase
+					/*firebase
 						.auth()
 						.createUserWithEmailAndPassword(
 							this.regForm.email,
@@ -134,10 +136,21 @@ export default {
 						.catch((err) => {
 							this.error = err.message;
 						});
-					alert("User add successfully!");
-				} else {
-					console.log("error submit!!");
-					return false;
+					alert("User add successfully!");*/
+					try {
+						firebase
+							.database()
+							.ref("Users/" + this.regForm.login + "/Credentials")
+							.set({
+								login: this.regForm.login,
+								email: this.regForm.email,
+								password: this.regForm.pass,
+							});
+						alert("User added successfully");
+						this.$router.replace({ name: "mainPage" });
+					} catch (error) {
+						console.log("Something goes wrong: /n", error);
+					}
 				}
 			});
 		},

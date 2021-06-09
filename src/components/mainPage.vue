@@ -6,8 +6,8 @@
 			background-color="gray"
 			text-color="#fff"
 			active-text-color="#ffd04b"
-			><template class="navbar" v-if="user.loggedIn">
-				<el-menu-item> Hi {{ user.data.displayName }}! </el-menu-item>
+			><template class="navbar" v-if="status === 'success'">
+				<el-menu-item> Hi {{ user.login }}! </el-menu-item>
 				<el-menu-item @click="signOut">
 					Sign Out
 				</el-menu-item>
@@ -70,26 +70,22 @@
 
 <script>
 import { mapGetters } from "vuex";
-import firebase from "firebase";
 
 export default {
 	computed: {
-		// map `this.user` to `this.$store.getters.user`
 		...mapGetters({
+			status: "authStatus",
 			user: "user",
 		}),
 	},
 	methods: {
 		signOut() {
-			console.log("here");
-			firebase
-				.auth()
-				.signOut()
-				.then(() => {
-					this.$router.replace({
-						name: "mainPage",
-					});
-				});
+			sessionStorage.clear();
+			localStorage.clear();
+			this.$store.dispatch("logout");
+			this.$router.replace({
+				name: "mainPage",
+			});
 		},
 	},
 };
