@@ -9,9 +9,12 @@
 	},
 	"dependencies": {
 		"axios": "^0.21.1",
+		"bcrypt": "^5.0.1",
+		"bcryptjs": "^2.4.3",
 		"core-js": "^3.6.5",
 		"element-ui": "^2.15.1",
 		"firebase": "^8.6.3",
+		"prehashed-bcrypt": "^0.2.0",
 		"vue": "^2.6.11",
 		"vue-axios": "^3.2.4",
 		"vue-date": "^1.2.0",

@@ -51,6 +51,7 @@
 </template>
 <script>
 import firebase from "firebase";
+import bcrypt from "bcryptjs";
 
 export default {
 	data() {
@@ -77,6 +78,7 @@ export default {
 				email: [{ validator: validateEmail, trigger: "blur" }],
 				pass: [{ validator: validatePass, trigger: "blur" }],
 			},
+			comparePass: false,
 		};
 	},
 	methods: {
@@ -84,7 +86,7 @@ export default {
 			try {
 				firebase
 					.database()
-					.ref("Users/" + this.loginForm.login + "/Credentials")
+					.ref("Users/" + this.loginForm.login + "/credentials")
 					.get()
 					.then((snapshot) => {
 						if (snapshot.exists()) {
@@ -104,10 +106,13 @@ export default {
 			this.$refs[loginForm].resetFields();
 		},
 		userAuth(login, password) {
-			if (
-				this.loginForm.login == login &&
-				this.loginForm.pass == password
-			) {
+			this.comparePass = bcrypt.compareSync(
+				this.loginForm.pass,
+				password,
+			);
+			console.log(this.comparePass);
+			console.log(login);
+			if (this.loginForm.login == login && this.comparePass == true) {
 				let login = this.loginForm.login;
 				this.$store.dispatch("login", { login });
 				alert("Sign in successfully");

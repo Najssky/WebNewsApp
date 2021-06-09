@@ -62,8 +62,8 @@
 	</div>
 </template>
 <script>
-import firebase from "firebase/app";
-import "firebase/auth";
+import firebase from "firebase";
+import bcrypt from "bcryptjs";
 
 export default {
 	data() {
@@ -82,7 +82,7 @@ export default {
 			}
 		};
 		var validatePass = (rule, value, callback) => {
-			if (value === "" || value.length < 6) {
+			if (value === "" || value.length < 4) {
 				callback(new Error("Please input the password"));
 			} else {
 				if (this.regForm.checkPass !== "") {
@@ -120,31 +120,17 @@ export default {
 		submitForm() {
 			this.$refs.regForm.validate((valid) => {
 				if (valid) {
-					/*firebase
-						.auth()
-						.createUserWithEmailAndPassword(
-							this.regForm.email,
-							this.regForm.pass,
-						)
-						.then((data) => {
-							data.user
-								.updateProfile({
-									displayName: this.regForm.name,
-								})
-								.then(() => {});
-						})
-						.catch((err) => {
-							this.error = err.message;
-						});
-					alert("User add successfully!");*/
 					try {
+						this.hashedPassword = this.encryptPassword(
+							this.regForm.pass,
+						);
 						firebase
 							.database()
 							.ref("Users/" + this.regForm.login + "/Credentials")
 							.set({
 								login: this.regForm.login,
 								email: this.regForm.email,
-								password: this.regForm.pass,
+								password: this.hashedPassword,
 							});
 						alert("User added successfully");
 						this.$router.replace({ name: "mainPage" });
@@ -156,6 +142,10 @@ export default {
 		},
 		resetForm(regForm) {
 			this.$refs[regForm].resetFields();
+		},
+		encryptPassword(password) {
+			const salt = bcrypt.genSaltSync(11);
+			return bcrypt.hashSync(password, salt);
 		},
 	},
 };
