@@ -6,7 +6,6 @@ import profile from "./components/profile.vue";
 import signInPage from "./components/signInPage.vue";
 import signUpPage from "./components/signUpPage.vue";
 import topNews from "./components/topNews.vue";
-
 Vue.use(VueRouter);
 
 export default new VueRouter({

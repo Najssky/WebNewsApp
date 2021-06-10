@@ -19,12 +19,11 @@
 			</template>
 		</el-menu>
 		<div class="profileData">
-			<h1
-				style="text-align: center; font-family: 'Roboto', sans-serif;color:white;"
-			>
-				Choose/edit your news searching options
-			</h1>
 			<div class="container">
+				<h1>
+					Choose/edit your news searching options
+				</h1>
+
 				<div class="searchOption">
 					<i class="el-icon-news">Top News Category</i>
 					<el-select
@@ -65,7 +64,20 @@
 					</el-select>
 				</div>
 			</div>
-			<el-button @click="writeUserData">Save your options</el-button>
+
+			<div class="favoritesNews">
+				<el-button @click="writeUserData">Save your options</el-button>
+				<br />
+				<h1>Your favorites</h1>
+				<el-button
+					v-for="(favorite, index) in favorites"
+					:key="index"
+					style="display:block; margin:0 0 10px 50px"
+					@click="buttonHref(favorite)"
+				>
+					{{ favorite }}
+				</el-button>
+			</div>
 		</div>
 	</div>
 </template>
@@ -77,6 +89,7 @@ import firebase from "firebase";
 export default {
 	data() {
 		return {
+			favorites: [],
 			sortBy: "",
 			maxPerPage: "",
 			category: "",
@@ -173,6 +186,28 @@ export default {
 					console.error(error);
 				});
 		},
+		getFavorites() {
+			firebase
+				.database()
+				.ref("Users/" + this.user.login + "/Favorites")
+				.get()
+				.then((snapshot) => {
+					if (snapshot.exists()) {
+						snapshot.val().forEach((element) => {
+							this.favorites.push(element);
+						});
+					} else {
+						console.log("No data available");
+					}
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+			console.log(this.favorites);
+		},
+		buttonHref(value) {
+			window.open(value);
+		},
 	},
 	computed: {
 		...mapGetters({
@@ -182,6 +217,7 @@ export default {
 	},
 	created() {
 		this.getUserConfig();
+		this.getFavorites();
 	},
 	watch: {
 		maxPerPage(newValue) {
@@ -215,12 +251,13 @@ body {
 	width: 80%;
 	min-height: 500px;
 	background: gray;
-	margin: 50px auto 0 auto;
+	margin: 50px 10% 0 10%;
 	-webkit-border-radius: 50px;
 	-moz-border-radius: 50px;
 	border-radius: 50px;
 	font-family: "roboto";
 	padding-top: 10px;
+	padding-bottom: 10px;
 }
 .searchOption {
 	display: inline-flex;
@@ -233,9 +270,7 @@ body {
 	float: left;
 }
 .container {
-	width: 100%;
-	margin-left: 25%;
-	margin-right: 25%;
+	margin: auto;
 }
 .el-select {
 	margin-top: 10px;
@@ -244,6 +279,14 @@ body {
 	display: inline-flex;
 	justify-content: center;
 	flex-direction: column;
+	clear: both;
+}
+.profileData h1 {
+	text-align: center;
+	font-family: "Roboto", sans-serif;
+	color: white;
+}
+.favoritesNews {
 	clear: both;
 }
 </style>

@@ -86,7 +86,7 @@ export default {
 			try {
 				firebase
 					.database()
-					.ref("Users/" + this.loginForm.login + "/credentials")
+					.ref("Users/" + this.loginForm.login + "/Credentials")
 					.get()
 					.then((snapshot) => {
 						if (snapshot.exists()) {

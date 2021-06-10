@@ -311,7 +311,6 @@ export default {
 			this.currentPage = 1;
 		},
 		fetchNews() {
-			console.log("dupa");
 			this.resetData();
 			this.apiUrl = `https://api.thenewsapi.com/v1/news/top?api_token=${this.apiKey}&search=${this.searchValue}&language=${this.language}&categories=${this.category}&sort=${this.sortBy}&page=${this.currentPage}`;
 			this.isBusy = true;
@@ -352,6 +351,7 @@ export default {
 							this.category = snapshot.val().categories;
 							this.fetchNews();
 						} else {
+							this.fetchNews();
 							console.log("No data available");
 						}
 					})
