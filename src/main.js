@@ -26,15 +26,14 @@ const responseInterceptor = axios.interceptors.response.use((res) => {
 });
 
 const configOptions = {
-	apiKey: "AIzaSyC3dbxai9K3bOI5TDJdi90hL5xDkzayrpU",
-	authDomain: "webnewsapp-798db.firebaseapp.com",
+	apiKey: "AIzaSyD6djttIo0m2HcZzhaE0IlDSR9rIdXNCcI",
+	authDomain: "newsapp-292a3.firebaseapp.com",
 	databaseURL:
-		"https://webnewsapp-798db-default-rtdb.europe-west1.firebasedatabase.app",
-	projectId: "webnewsapp-798db",
-	storageBucket: "webnewsapp-798db.appspot.com",
-	messagingSenderId: "681029281768",
-	appId: "1:681029281768:web:7a294b051e9149c345e65d",
-	measurementId: "G-2CYV93RDF9",
+		"https://newsapp-292a3-default-rtdb.europe-west1.firebasedatabase.app",
+	projectId: "newsapp-292a3",
+	storageBucket: "newsapp-292a3.appspot.com",
+	messagingSenderId: "125412184823",
+	appId: "1:125412184823:web:db52a4a384155878ca79f2",
 };
 
 firebase.initializeApp(configOptions);

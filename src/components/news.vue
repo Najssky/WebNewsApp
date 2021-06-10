@@ -126,11 +126,7 @@
 			<el-header style="text-align: right; font-size: 12px"> </el-header>
 
 			<el-main>
-				<article
-					v-for="(article, index) in articles"
-					:key="index"
-					@click="navigateTo(article.url)"
-				>
+				<article v-for="(article, index) in articles" :key="index">
 					<header>
 						<img
 							v-if="article.image_url"
@@ -140,11 +136,22 @@
 						<i v-else class="fas fa-image"></i>
 					</header>
 					<section>
-						<title v-html="article.title"></title>
+						<title
+							v-html="article.title"
+							@click="navigateTo(article.url)"
+						></title>
 						<div
 							class="description"
 							v-html="article.description"
 						></div>
+						<el-button
+							style="float:right;margin-right:10px;"
+							type="danger"
+							@click="addToFavorites(article.url)"
+							v-if="status === 'success'"
+						>
+							Add to Favorites
+						</el-button>
 					</section>
 					<footer>
 						<i class="fas fa-chevron-right "></i>
@@ -211,6 +218,7 @@ export default {
 					},
 				],
 			},
+
 			searchValue: "",
 			pickerDate: null,
 			apiUrl: "",
@@ -282,6 +290,7 @@ export default {
 			],
 			database: firebase.database(),
 			userId: "",
+			favorites: [],
 		};
 	},
 	computed: {
@@ -311,7 +320,6 @@ export default {
 			this.currentPage = 1;
 		},
 		fetchNews() {
-			console.log("dupa");
 			this.resetData();
 			this.apiUrl = `https://api.thenewsapi.com/v1/news/all?api_token=${this.apiKey}&search=${this.searchValue}&language=${this.language}&categories=${this.category}&sort=${this.sortBy}&page=${this.currentPage}`;
 			this.isBusy = true;
@@ -346,12 +354,24 @@ export default {
 					.get()
 					.then((snapshot) => {
 						if (snapshot.exists()) {
-							console.log;
-							this.sortBy = snapshot.val().sortBy;
-							this.language = snapshot.val().language;
-							this.category = snapshot.val().categories;
+							if (snapshot.val().sortBy == undefined) {
+								this.sortBy = "";
+							} else {
+								this.sortBy = snapshot.val().sortBy;
+							}
+							if (snapshot.val().categories == undefined) {
+								this.category = "";
+							} else {
+								this.category = snapshot.val().categories;
+							}
+							if (snapshot.val().language == undefined) {
+								this.language = "";
+							} else {
+								this.language = snapshot.val().language;
+							}
 							this.fetchNews();
 						} else {
+							this.fetchNews();
 							console.log("No data available");
 						}
 					})
@@ -361,6 +381,41 @@ export default {
 			} else {
 				this.fetchNews();
 				console.log("User is not logged");
+			}
+		},
+		addToFavorites(value) {
+			try {
+				firebase
+					.database()
+					.ref("Users/" + this.user.login + "/Favorites")
+					.get()
+					.then((snapshot) => {
+						if (snapshot.exists()) {
+							this.favorites = [];
+							snapshot.val().forEach((element) => {
+								this.favorites.push(element);
+							});
+							console.log(this.favorites);
+							this.favorites.push(value);
+							firebase
+								.database()
+								.ref("Users/" + this.user.login + "/Favorites")
+								.set(this.favorites);
+							console.log(this.favorites);
+							alert("News added successfully");
+						} else {
+							this.favorites.push(value);
+							firebase
+								.database()
+								.ref("Users/" + this.user.login + "/Favorites")
+								.set(this.favorites);
+							console.log(this.favorites);
+							alert("News added successfully");
+							console.log("No data available");
+						}
+					});
+			} catch (error) {
+				console.log("Something goes wrong: /n", error);
 			}
 		},
 	},
@@ -374,7 +429,6 @@ export default {
 		},
 		sortBy(newValue) {
 			this.sortBy = newValue;
-			console.log(this.sortBy);
 			this.currentPage = 1;
 		},
 		pickerDate(newValue) {
