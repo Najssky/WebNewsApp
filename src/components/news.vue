@@ -12,7 +12,7 @@
 					</el-button>
 				</router-link>
 			</el-menu-item>
-			<el-submenu>
+			<el-submenu index="1">
 				<template slot="title"
 					><i class="el-icon-search"></i>Search your news</template
 				>
@@ -37,7 +37,7 @@
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
-			<el-submenu>
+			<el-submenu index="2">
 				<template slot="title">
 					<i class="el-icon-date"></i>Pick a date
 				</template>
@@ -58,7 +58,7 @@
 					</el-menu-item>
 				</el-menu-item-group>
 			</el-submenu>
-			<el-submenu>
+			<el-submenu index="3">
 				<template slot="title"
 					><i class="el-icon-setting"></i>Rest of searching options
 				</template>
@@ -107,10 +107,35 @@
 						</el-select>
 					</el-menu-item>
 				</el-menu-item-group>
+			</el-submenu>
+			<el-menu-item-group>
+				<el-menu-item>
+					<el-button icon="el-icon-search" @click="fetchNews"
+						>Search with your preferences</el-button
+					>
+				</el-menu-item>
+			</el-menu-item-group>
+			<el-submenu index="4" v-if="status === 'success'">
+				<template slot="title"
+					><i class="el-icon-setting"></i>Your searching history
+				</template>
 				<el-menu-item-group>
 					<el-menu-item>
-						<el-button icon="el-icon-search"
-							>Search with your preferences</el-button
+						<el-select v-model="historyApiUrl" placeholder="Select">
+							<el-option
+								v-for="(historyUrl, index) in reversedHistory"
+								:key="index"
+								:label="historyUrl"
+								:value="historyUrl"
+							>
+							</el-option>
+						</el-select>
+					</el-menu-item>
+					<el-menu-item>
+						<el-button
+							icon="el-icon-search"
+							@click="fetchHistoryNews"
+							>Search with history</el-button
 						>
 					</el-menu-item>
 				</el-menu-item-group>
@@ -152,6 +177,15 @@
 						>
 							Add to Favorites
 						</el-button>
+						<el-button
+							style="float:right;margin-right:10px;"
+							type="primary"
+							@click="
+								showSimiliarNews(article.uuid, article.language)
+							"
+						>
+							Show similiar news
+						</el-button>
 					</section>
 					<footer>
 						<i class="fas fa-chevron-right "></i>
@@ -177,6 +211,7 @@
 import moment from "moment";
 import { mapGetters } from "vuex";
 import firebase from "firebase";
+import _ from "lodash";
 
 export default {
 	data() {
@@ -218,7 +253,8 @@ export default {
 					},
 				],
 			},
-
+			historyUrl: [],
+			historyApiUrl: "",
 			searchValue: "",
 			pickerDate: null,
 			apiUrl: "",
@@ -298,6 +334,9 @@ export default {
 			status: "authStatus",
 			user: "user",
 		}),
+		reversedHistory: function() {
+			return _.reverse(this.historyUrl);
+		},
 	},
 	methods: {
 		navigateTo(url) {
@@ -320,10 +359,53 @@ export default {
 			this.currentPage = 1;
 		},
 		fetchNews() {
+			if (
+				this.status === "success" &&
+				(this.category !== "" ||
+					this.sortBy !== "" ||
+					this.searchValue !== "" ||
+					this.language !== "")
+			) {
+				if (this.pickerDate == null) {
+					this.apiUrl = `https://api.thenewsapi.com/v1/news/all?api_token=${this.apiKey}&search=${this.searchValue}&language=${this.language}&categories=${this.category}&sort=${this.sortBy}&page=${this.currentPage}`;
+				} else {
+					this.apiUrl = `https://api.thenewsapi.com/v1/news/all?api_token=${this.apiKey}&search=${this.searchValue}&language=${this.language}&categories=${this.category}&sort=${this.sortBy}&page=${this.currentPage}&published_after=${this.fromDate}&published_before=${this.toDate}`;
+				}
+				this.resetData();
+				this.isBusy = true;
+				this.fetchData();
+				this.sendToHistory();
+			} else {
+				if (this.pickerDate == null) {
+					this.apiUrl = `https://api.thenewsapi.com/v1/news/all?api_token=${this.apiKey}&search=${this.searchValue}&language=${this.language}&categories=${this.category}&sort=${this.sortBy}&page=${this.currentPage}`;
+				} else {
+					this.apiUrl = `https://api.thenewsapi.com/v1/news/all?api_token=${this.apiKey}&search=${this.searchValue}&language=${this.language}&categories=${this.category}&sort=${this.sortBy}&page=${this.currentPage}&published_after=${this.fromDate}&published_before=${this.toDate}`;
+				}
+				this.resetData();
+				this.isBusy = true;
+				this.fetchData();
+			}
+		},
+		fetchHistoryNews() {
+			this.apiUrl = this.historyApiUrl;
 			this.resetData();
-			this.apiUrl = `https://api.thenewsapi.com/v1/news/all?api_token=${this.apiKey}&search=${this.searchValue}&language=${this.language}&categories=${this.category}&sort=${this.sortBy}&page=${this.currentPage}`;
 			this.isBusy = true;
 			this.fetchData();
+			this.sendToHistory();
+		},
+		showSimiliarNews(newsId, newsLanguage) {
+			if (this.status === "success") {
+				this.resetData();
+				this.apiUrl = `https://api.thenewsapi.com/v1/news/similar/${newsId}?api_token=${this.apiKey}&language=${newsLanguage}`;
+				this.isBusy = true;
+				this.fetchData();
+				this.sendToHistory();
+			} else {
+				this.resetData();
+				this.apiUrl = `https://api.thenewsapi.com/v1/news/similar/${newsId}?api_token=${this.apiKey}&language=${newsLanguage}`;
+				this.isBusy = true;
+				this.fetchData();
+			}
 		},
 		fetchData() {
 			let req = new Request(this.apiUrl);
@@ -381,6 +463,39 @@ export default {
 			} else {
 				this.fetchNews();
 				console.log("User is not logged");
+			}
+		},
+		sendToHistory() {
+			try {
+				firebase
+					.database()
+					.ref("Users/" + this.user.login + "/History")
+					.get()
+					.then((snapshot) => {
+						if (snapshot.exists()) {
+							this.historyUrl = [];
+							snapshot.val().forEach((element) => {
+								this.historyUrl.push(element);
+							});
+							console.log(this.historyUrl);
+							this.historyUrl.push(this.apiUrl);
+							firebase
+								.database()
+								.ref("Users/" + this.user.login + "/History")
+								.set(this.historyUrl);
+							console.log(this.historyUrl);
+						} else {
+							this.historyUrl.push(this.apiUrl);
+							firebase
+								.database()
+								.ref("Users/" + this.user.login + "/History")
+								.set(this.historyUrl);
+							console.log(this.historyUrl);
+							console.log("No data available");
+						}
+					});
+			} catch (error) {
+				console.log("Something goes wrong: /n", error);
 			}
 		},
 		addToFavorites(value) {
@@ -501,9 +616,8 @@ article > header {
 }
 article > header > img {
 	max-width: 100%;
-	height: auto;
-	margin-left: 10%;
-	border-radius: 2.604vw;
+	min-width: 100%;
+	min-height: 100%;
 }
 article > header > i {
 	font-size: 2rem;

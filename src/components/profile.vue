@@ -19,11 +19,10 @@
 			</template>
 		</el-menu>
 		<div class="profileData">
-			<div class="container">
-				<h1>
-					Choose/edit your news searching options
-				</h1>
-
+			<h1>
+				Choose/edit your news searching options
+			</h1>
+			<div class="flex-container">
 				<div class="searchOption">
 					<i class="el-icon-news">Top News Category</i>
 					<el-select
@@ -64,15 +63,18 @@
 					</el-select>
 				</div>
 			</div>
-
+			<div class="flex-container">
+				<el-button @click="writeUserData">
+					Save your options
+				</el-button>
+			</div>
 			<div class="favoritesNews">
-				<el-button @click="writeUserData">Save your options</el-button>
 				<br />
 				<h1>Your favorites</h1>
 				<el-button
 					v-for="(favorite, index) in favorites"
 					:key="index"
-					style="display:block; margin:0 0 10px 50px"
+					style="display:block; margin:0 0 10px 50px;"
 					@click="buttonHref(favorite)"
 				>
 					{{ favorite }}
@@ -268,6 +270,7 @@ body {
 	margin-top: 20px;
 	flex-direction: column;
 	float: left;
+	font-family: "roboto";
 }
 .container {
 	margin: auto;
@@ -288,5 +291,25 @@ body {
 }
 .favoritesNews {
 	clear: both;
+}
+.flex-container {
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-direction: row;
+	-ms-flex-direction: row;
+	flex-direction: row;
+	-webkit-flex-wrap: wrap;
+	-ms-flex-wrap: wrap;
+	flex-wrap: wrap;
+	-webkit-justify-content: center;
+	-ms-flex-pack: center;
+	justify-content: center;
+	-webkit-align-content: flex-start;
+	-ms-flex-line-pack: start;
+	align-content: flex-start;
+	-webkit-align-items: flex-start;
+	-ms-flex-align: start;
+	align-items: flex-start;
 }
 </style>
