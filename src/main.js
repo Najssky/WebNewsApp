@@ -1,5 +1,6 @@
 import axios from "axios";
 import ElementUI from "element-ui";
+import elementLocale from "element-ui/lib/locale/lang/en";
 import "element-ui/lib/theme-chalk/index.css";
 import firebase from "firebase/app";
 import "firebase/auth";
@@ -42,7 +43,7 @@ axios.interceptors.request.eject(requestInterceptor);
 axios.interceptors.request.eject(responseInterceptor);
 
 Vue.use(VueAxios, axios);
-Vue.use(ElementUI);
+Vue.use(ElementUI, { locale: elementLocale });
 Vue.use(VueDateNow);
 Vue.use(require("vue-moment"));
 Vue.use(require("vue-moment"), {
@@ -50,7 +51,9 @@ Vue.use(require("vue-moment"), {
 });
 
 Vue.config.productionTip = false;
-
+Vue.filter("reverse", function(value) {
+	return value.slice().reverse();
+});
 new Vue({
 	router,
 	store,
